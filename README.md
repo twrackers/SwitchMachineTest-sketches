@@ -1,6 +1,6 @@
 # SwitchMachineTest #
 
-The *SwitchMachineTest* sketch runs on an Arduino-class microcontroller, and communicates via I<sup>2</sup>C with another Arduino running the *SwitchMachineController* sketch.  The controller sketch is written to run on an Adafruit Pro Trinket and supports up to four switch machines, numbered 0 through 3.  For this sketch, switch machines 0 and 1 are used together.  You can find a sample track layout in the `extras` directory at .
+The *SwitchMachineTest* sketch runs on an Arduino-class microcontroller, and communicates via I<sup>2</sup>C with another Arduino running the *SwitchMachineController* sketch.  The controller sketch is written to run on an Adafruit Pro Trinket and supports up to four switch machines, numbered 0 through 3.  For this sketch, switch machines 0 and 1 are used together.  You can find a sample track layout in the `extras` directory at [https://github.com/twrackers/SwitchMachineTest-sketches/blob/main/extras/loop.png](https://github.com/twrackers/SwitchMachineTest-sketches/blob/main/extras/loop.png).
 
 The Arduino running the test sketch requires three momentary normally-open pushbuttons connected between GPIO pins and ground.
 
