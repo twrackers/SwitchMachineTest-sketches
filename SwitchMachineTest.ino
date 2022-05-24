@@ -25,7 +25,7 @@ PushButton pbRefresh(pinRefresh, LOW, 500);
 PushButton pbReset(pinReset, LOW, 500);
 PushButton pbToggle(pinToggle, LOW, 500);
 
-// Define the current state of the two turnouts.  When the 
+// Define the current state of four turnouts.  When the 
 // switch machine controller on the bus boots, it will set its
 // switch machines to their main routes, so we set the local
 // state to match.
@@ -51,9 +51,11 @@ void loop()
   if (pbToggle.update()) {
     // Toggle the state...
     toMain = !toMain;
-    // ... and send a move command to both switch machines.
+    // ... and send a move command to each switch machine.
     send(I2C_ADDR, (toMain ? eMain : eDiv) | eChan0);
     send(I2C_ADDR, (toMain ? eMain : eDiv) | eChan1);
+    send(I2C_ADDR, (toMain ? eMain : eDiv) | eChan2);
+    send(I2C_ADDR, (toMain ? eMain : eDiv) | eChan3);
     // Trigger the LED flash.
     flash.trigger();
   }
