@@ -2,6 +2,7 @@
 
 #include <OneShot.h>
 #include <Pulse.h>
+#include <Pulser.h>
 #include <PushButton.h>
 
 #include "SwitchMachineCmds.h"
@@ -11,11 +12,19 @@ const byte pinRefresh = 12;   // "refresh" pushbutton, input
 const byte pinReset   = 11;   // "reset" pushbutton, input
 const byte pinToggle  = 10;   // "toggle" pushbutton, input
 
-// I2C address of attached SwitchMachineController
-const byte I2C_ADDR = 0x30;
+#define DIM(x) ((sizeof(x)) / (sizeof(*(x))))
 
-// The onboard LED, when triggered, will flash for 200 msec.
-Pulse flash(LED_BUILTIN, HIGH, 200);
+// I2C addresses of attached SwitchMachineControllers
+const byte I2C_ADDR[] = {0x32, 0x33};
+
+// Channel codes
+const byte CHANNEL[] = {eChan0, eChan1, eChan2, eChan3};
+
+// Time (msec) a controller will need to update all its channels.
+const int updateInterval = 40 * DIM(CHANNEL);
+
+// Toggle switch machines on 1 sec / 2 sec cycle.
+Pulser toggleTimer(1000, 2000);
 
 // Momentary pushbuttons are connected to the input pins, so that
 // each pin is pulled to GROUND when its button is pressed.
@@ -34,6 +43,7 @@ bool toMain = true;
 // Transmit byte to specific I2C address.
 void send(const byte addr, const byte b)
 {
+  pinMode(LED_BUILTIN, OUTPUT);
   Wire.beginTransmission(addr);
   Wire.write(b);
   Wire.endTransmission();
@@ -47,33 +57,35 @@ void setup()
 
 void loop()
 {
-  // Has the toggle pushbutton been pressed?
-  if (pbToggle.update()) {
-    // Toggle the state...
-    toMain = !toMain;
-    // ... and send a move command to both switch machines.
-    send(I2C_ADDR, (toMain ? eMain : eDiv) | eChan0);
-    send(I2C_ADDR, (toMain ? eMain : eDiv) | eChan1);
-    // Trigger the LED flash.
-    flash.trigger();
+  if (toggleTimer.update()) {
+    if (toMain == toggleTimer.read()) {
+      // Toggle for other route...
+      toMain = !toMain;
+      // ... and send a move command to all switch machines.
+      digitalWrite(LED_BUILTIN, HIGH);
+      for (byte addr = 0; addr < DIM(I2C_ADDR); ++addr) {
+        byte address = I2C_ADDR[addr];
+        byte command = toMain ? eMain : eDiv;
+        for (byte chan = 0; chan < DIM(CHANNEL); ++chan) {
+          send(address, command | CHANNEL[chan]);
+        }
+        delay(updateInterval);
+      }
+      digitalWrite(LED_BUILTIN, LOW);
+    }
   }
 
   // Has the refresh pushbutton been pressed?
   if (pbRefresh.update()) {
     // Send a refresh command to the controller.
-    send(I2C_ADDR, eRefresh);
-    // Trigger the LED flash.
-    flash.trigger();
+    send(I2C_ADDR[0], eRefresh);
+    send(I2C_ADDR[1], eRefresh);
   }
 
   // Has the reset pushbutton been pressed?
   if (pbReset.update()) {
     // Send a reset command to the controller.
-    send(I2C_ADDR, eReset);
-    // Trigger the LED flash.
-    flash.trigger();
+    send(I2C_ADDR[0], eReset);
+    send(I2C_ADDR[1], eReset);
   }
-
-  // Update the flash.
-  flash.update();
 }
