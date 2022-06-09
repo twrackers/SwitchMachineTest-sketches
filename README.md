@@ -1,10 +1,10 @@
 # SwitchMachineTest #
 
-The *SwitchMachineTest* sketch runs on an Arduino-class microcontroller, and communicates via I<sup>2</sup>C with another Arduino running the *SwitchMachineController* sketch.  The controller sketch is written to run on an Adafruit Pro Trinket and supports up to four switch machines, numbered 0 through 3.  For this sketch, switch machines 0 and 1 are used together.  You can find a sample track layout in the `extras` directory at [https://github.com/twrackers/SwitchMachineTest-sketches/blob/main/extras/loop.png](https://github.com/twrackers/SwitchMachineTest-sketches/blob/main/extras/loop.png).
+The *SwitchMachineTest* sketch runs on an Arduino-class microcontroller, and communicates via I<sup>2</sup>C with another Arduino running the *SwitchMachineController* sketch.  The controller sketch is written to run on an Adafruit Pro Trinket or ItsyBitsy 32u4, and supports up to four switch machines, numbered 0 through 3.  For this sketch, all four switch machines, if connected, are used together.  You can find a sample track layout with two turnouts in the `extras` directory at [https://github.com/twrackers/SwitchMachineTest-sketches/blob/main/extras/loop.png](https://github.com/twrackers/SwitchMachineTest-sketches/blob/main/extras/loop.png).
 
 The Arduino running the test sketch requires three momentary normally-open pushbuttons connected between GPIO pins and ground.
 
-- pin 10: Toggles both switch machines between their main and diverging routes.
+- pin 10: Toggles all switch machines between their main and diverging routes.
 - pin 11: Sends a RESET command to the switch machine controller.
 - pin 12: Sends a REFRESH command to the switch machine controller.
 

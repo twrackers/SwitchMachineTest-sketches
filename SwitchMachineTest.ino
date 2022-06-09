@@ -34,7 +34,7 @@ PushButton pbRefresh(pinRefresh, LOW, 500);
 PushButton pbReset(pinReset, LOW, 500);
 PushButton pbToggle(pinToggle, LOW, 500);
 
-// Define the current state of the two turnouts.  When the 
+// Define the current state of four turnouts.  When the 
 // switch machine controller on the bus boots, it will set its
 // switch machines to their main routes, so we set the local
 // state to match.
