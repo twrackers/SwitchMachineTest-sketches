@@ -1,5 +1,4 @@
 #include <Wire.h>
-//#include <Streaming.h>
 
 #include <OneShot.h>
 #include <Pulse.h>
@@ -30,7 +29,6 @@ Pulser toggleTimer(1000, 2000);
 
 // Sequencer for stepping through I2C peripherals in sequence.
 Sequencer sequencer(updateInterval, DIM(I2C_ADDR));
-//int mostRecentStep;
 
 // Momentary pushbuttons are connected to the input pins, so that
 // each pin is pulled to GROUND when its button is pressed.
@@ -59,7 +57,6 @@ void setup()
 {
   // Enable I2C.
   Wire.begin();
-//  Serial.begin(115200);
 }
 
 void loop()
@@ -70,14 +67,11 @@ void loop()
       toMain = !toMain;
       // ... and send a move command to all switch machines.
       sequencer.start();
-//      mostRecentStep = -1;
     }
   }
 
   int currentStep = sequencer.read();
-  if (sequencer.update() 
-    && (currentStep >= 0)
-    /*&& (currentStep != mostRecentStep)*/) {
+  if (sequencer.update() && (currentStep >= 0)) {
     digitalWrite(LED_BUILTIN, HIGH);
     byte address = I2C_ADDR[currentStep];
     byte command = toMain ? eMain : eDiv;
@@ -85,8 +79,6 @@ void loop()
       send(address, command | CHANNEL[chan]);
     }
     digitalWrite(LED_BUILTIN, LOW);
-//    Serial << currentStep << endl;
-//    mostRecentStep = currentStep;
   }
     
   // Has the refresh pushbutton been pressed?
