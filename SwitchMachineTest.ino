@@ -42,7 +42,7 @@ PushButton pbToggle(pinToggle, LOW, 500);
 // switch machine controller on the bus boots, it will set its
 // switch machines to their main routes, so we set the local
 // state to match.
-bool toMain = true;
+bool toDiv = false;
 
 // Transmit byte to specific I2C address.
 void send(const byte addr, const byte b)
@@ -61,26 +61,36 @@ void setup()
 
 void loop()
 {
+  // Time to change the turnout positions?
   if (toggleTimer.update()) {
-    if (toMain == toggleTimer.read()) {
-      // Toggle for other route...
-      toMain = !toMain;
-      // ... and send a move command to all switch machines.
+    // If so, does current position match desired?
+    if (toDiv != toggleTimer.read()) {
+      // If not, toggle for desired route...
+      toDiv = !toDiv;
+      // ... and trigger sending move command to all switch machines.
       sequencer.start();
     }
   }
 
+  // When not triggered, read() returns -1;
+  // when triggered, read() returns 0 through (#steps - 1).
   int currentStep = sequencer.read();
+  // Has sequencer updated, and is sequence started?
   if (sequencer.update() && (currentStep >= 0)) {
+    // If so, flash the builtin LED.
     digitalWrite(LED_BUILTIN, HIGH);
+    // With each step, use the I2C address in sequence.
     byte address = I2C_ADDR[currentStep];
-    byte command = toMain ? eMain : eDiv;
+    // Select correct command code.
+    byte command = toDiv ? eDiv : eMain;
+    // For selected address, send command to toggle each channel.
     for (byte chan = 0; chan < DIM(CHANNEL); ++chan) {
       send(address, command | CHANNEL[chan]);
     }
     digitalWrite(LED_BUILTIN, LOW);
   }
     
+  // TODO: Add sequencer logic.
   // Has the refresh pushbutton been pressed?
   if (pbRefresh.update()) {
     // Send a refresh command to the controllers.
@@ -91,6 +101,7 @@ void loop()
     digitalWrite(LED_BUILTIN, LOW);
   }
 
+  // TODO: Add sequencer logic.
   // Has the reset pushbutton been pressed?
   if (pbReset.update()) {
     // Send a reset command to the controllers.
