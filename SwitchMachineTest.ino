@@ -24,8 +24,8 @@ const byte CHANNEL[] = {eChan0, eChan1, eChan2, eChan3};
 // Time (msec) a controller will need to update all its channels.
 const int updateInterval = 50 * DIM(CHANNEL);
 
-// Toggle switch machines on 1 sec / 2 sec cycle.
-Pulser toggleTimer(1000, 2000);
+// Toggle switch machines on 1 sec / 1 sec cycle.
+Pulser toggleTimer(1000, 1000);
 
 // Sequencer for stepping through I2C peripherals in sequence.
 Sequencer sequencer(updateInterval, DIM(I2C_ADDR));
