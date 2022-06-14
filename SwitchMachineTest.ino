@@ -16,16 +16,16 @@ const byte pinToggle  = 10;   // "toggle" pushbutton, input
 #define DIM(x) ((sizeof(x)) / (sizeof(*(x))))
 
 // I2C addresses of attached SwitchMachineControllers
-const byte I2C_ADDR[] = {0x32, 0x33};
+const byte I2C_ADDR[] = {0x36, 0x37};
 
 // Channel codes
 const byte CHANNEL[] = {eChan0, eChan1, eChan2, eChan3};
 
 // Time (msec) a controller will need to update all its channels.
-const int updateInterval = 50 * DIM(CHANNEL);
+const int updateInterval = 30 * DIM(CHANNEL);
 
-// Toggle switch machines on 1 sec / 1 sec cycle.
-Pulser toggleTimer(1000, 1000);
+// Toggle switch machines on 1 sec / 2 sec cycle.
+Pulser toggleTimer(1000, 2000);
 
 // Sequencer for stepping through I2C peripherals in sequence.
 Sequencer sequencer(updateInterval, DIM(I2C_ADDR));
