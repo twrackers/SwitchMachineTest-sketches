@@ -16,7 +16,7 @@ const byte pinToggle  = 10;   // "toggle" pushbutton, input
 #define DIM(x) ((sizeof(x)) / (sizeof(*(x))))
 
 // I2C addresses of attached SwitchMachineControllers
-const byte I2C_ADDR[] = {0x36, 0x37};
+const byte I2C_ADDR[] = {0x30, 0x31};
 
 // Channel codes
 const byte CHANNEL[] = {eChan0, eChan1, eChan2, eChan3};
