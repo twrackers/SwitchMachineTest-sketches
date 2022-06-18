@@ -30,10 +30,11 @@
  *       // Yes, start a sequence.
  *       sequencer.start();
  *     }
+ *     // Sequencer should be read BEFORE updating.
+ *     int step = sequencer.read();
  *     // Time to advance the stepper if running?
  *     if (sequencer.update()) {
  *       // Yes, is stepper running?
- *       int step = sequencer.read();
  *       if (step >= 0) {
  *         // Yes, send character number 'step' out.
  *         Serial.write(characters[step]);

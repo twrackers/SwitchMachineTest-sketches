@@ -9,7 +9,7 @@
 // sketch (https://github.com/twrackers/SwitchMachineController-sketches).
 // This set of codes will support up to 8 switch machines per controller,
 // although the current version of the SwitchMachineController sketch only
-// controls 4 switch machines on an Adafruit Pro Trinket or an Arduino UNO.
+// controls 4 switch machines on an Adafruit Pro Trinket or ItsyBitsy 32u4.
 
 // Each command code has a Hamming distance
 // of at least 2 bits from all other codes.
