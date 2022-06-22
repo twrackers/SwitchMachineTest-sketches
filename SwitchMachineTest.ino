@@ -26,7 +26,7 @@ const byte CHANNEL[] = {eChan0, eChan1, eChan2, eChan3};
 const int updateInterval = 30 * DIM(CHANNEL);
 
 // Toggle switch machines on 1 sec / 2 sec cycle.
-Pulser toggleTimer(1000, 2000);
+Pulser toggleTimer(2000, 4000);
 
 // Sequencer for stepping through I2C peripherals in sequence.
 // Update interval gives each controller time to command all its
@@ -47,9 +47,9 @@ PushButton pbReset(pinReset, LOW, 500);
 // state to match.
 bool toDiv = false;
 
-// Current command being processed, 0x00 means none.
+// Current command being processed, eNone means none.
 // All actual commands are non-zero.
-E_CMD activeCommand = 0x00;
+E_CMD activeCommand = eNone;
 
 // Queue of switch machine commands to be sent.
 FIFO commandQueue(8);
@@ -70,6 +70,8 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   // Enable I2C.
   Wire.begin();
+  // Allow time for switch machine controllers to get started.
+  delay(3000);
 }
 
 void loop()
@@ -84,13 +86,13 @@ void loop()
       commandQueue.push((byte) (toDiv ? eDiv : eMain));
     }
   }
-  
+
   // If either pushbutton has been pushed, queue up its command code.
-  if (pbRefresh.update()) {
-    commandQueue.push((byte) eRefresh);
-  }
   if (pbReset.update()) {
     commandQueue.push((byte) eReset);
+  }
+  if (pbRefresh.update()) {
+    commandQueue.push((byte) eRefresh);
   }
 
   // Get current sequence step, then update sequencer if it's
@@ -140,7 +142,7 @@ void loop()
         }
       }
       break;
-    default:  // activeCommand == 0x00
+    default:  // activeCommand == eNone == 0x00
       {
         // No sequencing is active, check queue for next command.
         if (!commandQueue.isEmpty()) {

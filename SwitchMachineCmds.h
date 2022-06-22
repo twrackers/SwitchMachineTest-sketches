@@ -11,13 +11,13 @@
 // although the current version of the SwitchMachineController sketch only
 // controls 4 switch machines on an Adafruit Pro Trinket or ItsyBitsy 32u4.
 
-// Each command code has a Hamming distance
-// of at least 2 bits from all other codes.
-// Additional codes which would meet this
-// criterion are (using only high 4 bits):
+// Each command code (excluding eNone) has a Hamming distance
+// of at least 2 bits from all other codes.  Additional codes which would
+// meet this criterion are (using only high 4 bits):
 //   0x80  0xC0  0xE0  0xF0
 
 enum E_CMD {
+  eNone    = 0x00,
   eRefresh = 0x10,
   eMain    = 0x20,
   eDiv     = 0x40,
