@@ -9,6 +9,16 @@ The test sketch toggles the controllers' outputs periodically between their 'mai
 
 More information about the commands recognized by the switch machine controller can be found in the *SwitchMachineController* sketch's README file at [https://github.com/twrackers/SwitchMachineController-sketches/blob/main/README.md](https://github.com/twrackers/SwitchMachineController-sketches/blob/main/README.md)
 
+## Test Configuration ##
+
+The test setup uses a [STEMTera™](https://stemtera.com/), a breadboard with an Arduino UNO compatible processor inside, as a test processor.  Mounted in the breadboard space on top is a pair of Adafruit Pro Trinket processors, each programmed with the [*SwitchMachineController*](https://github.com/twrackers/SwitchMachineController-sketches) sketch.  There is also one or two momentary normally-open pushbuttons between two GPIO pins on the STEMTera and a ground connection.
+
+The STEMTera's I<sup>2</sup>C pins *SDA* and *SCL* are connected to the Pro Trinkets' *SDA* and *SCL* pins as well, forming an I<sup>2</sup>C bus with the STEMTera as the central and the Pro Trinkets as peripherals.  Each Pro Trinket uses 3 GPIO pins to set its peripheral I<sup>2</sup>C address to a value between 0x30 and 0x37.  For this setup, I used 0x30 and 0x31.
+
+LEDs are connected to some of the 3-pin output channels of the *SwitchMachineController* processors, which are connected as [blue, red, green] to monitor [*enable*, *red*, *black*] signals respectively for each channel.
+
+The *SwitchMachineTest* runs in a loop where it sends commands via I<sup>2</sup>C to switch all connected controllers' channels to "diverging" state for 1 second, then back to "main" state for 2 seconds, then repeats indefinitely.  By pushing either of the connected pushbuttons, "reset" and "refresh" commands can also be sent to the controllers.
+
 ## Installation ##
 
 Instructions for installing the *SwitchMachineTest* sketch can be found in file `INSTALL.md` in this repository at [https://github.com/twrackers/SwitchMachineTest-sketches/blob/main/INSTALL.md](https://github.com/twrackers/SwitchMachineTest-sketches/blob/main/INSTALL.md).
@@ -18,6 +28,7 @@ Instructions for installing the *SwitchMachineTest* sketch can be found in file 
 The *SwitchMachineTest* sketch uses the following libraries.
 
 - *Wire* library, part of the Arduino IDE distribution
+- *FIFO* library, [https://github.com/twrackers/FIFO-library](https://github.com/twrackers/FIFO-library)
 - *OneShot* library, [https://github.com/twrackers/OneShot-library](https://github.com/twrackers/OneShot-library)
 - *Pulse* library, [https://github.com/twrackers/Pulse-library](https://github.com/twrackers/Pulse-library)
 - *Pulser* library, [https://github.com/twrackers/Pulser-library](https://github.com/twrackers/Pulser-library)
