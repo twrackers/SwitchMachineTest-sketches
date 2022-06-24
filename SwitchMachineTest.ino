@@ -25,8 +25,8 @@ const byte CHANNEL[] = {eChan0, eChan1, eChan2, eChan3};
 // Time (msec) a controller will need to update all its channels.
 const int updateInterval = 30 * DIM(CHANNEL);
 
-// Toggle switch machines on 1 sec / 2 sec cycle.
-Pulser toggleTimer(2000, 4000);
+// Toggle switch machines on 4 sec / 2 sec cycle.
+Pulser toggleTimer(4000, 2000);
 
 // Sequencer for stepping through I2C peripherals in sequence.
 // Update interval gives each controller time to command all its
@@ -45,7 +45,7 @@ PushButton pbReset(pinReset, LOW, 500);
 // switch machine controller on the bus boots, it will set its
 // switch machines to their main routes, so we set the local
 // state to match.
-bool toDiv = false;
+bool toMain = true;
 
 // Current command being processed, eNone means none.
 // All actual commands are non-zero.
@@ -53,6 +53,9 @@ E_CMD activeCommand = eNone;
 
 // Queue of switch machine commands to be sent.
 FIFO commandQueue(8);
+
+// Hold off all I2C comms until timeout after startup.
+bool waiting = true;
 
 // Transmit byte to specific I2C address.
 void send(const byte addr, const byte b)
@@ -70,29 +73,33 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   // Enable I2C.
   Wire.begin();
-  // Allow time for switch machine controllers to get started.
-  delay(3000);
 }
 
 void loop()
 {
-  // Time to update toggle timer?
-  if (toggleTimer.update()) {
-    // Did toggle timer object change state since previous update?
-    bool toDivNew = toggleTimer.read();
-    if (toDiv != toDivNew) {
-      // State changed, queue up matching command (eMain or eDiv).
-      toDiv = toDivNew;
-      commandQueue.push((byte) (toDiv ? eDiv : eMain));
-    }
+  // Has startup delay expired?
+  if (waiting && (millis() >= 4000)) {
+    commandQueue.push((byte) eReset);
+    waiting = false;
   }
-
+  
   // If either pushbutton has been pushed, queue up its command code.
   if (pbReset.update()) {
     commandQueue.push((byte) eReset);
   }
   if (pbRefresh.update()) {
     commandQueue.push((byte) eRefresh);
+  }
+
+  // Time to update toggle timer?
+  if (toggleTimer.update() && !waiting) {
+    // Did toggle timer object change state since previous update?
+    bool toMainNew = toggleTimer.read();
+    if (toMain != toMainNew) {
+      // State changed, queue up matching command (eMain or eDiv).
+      toMain = toMainNew;
+      commandQueue.push((byte) (toMain ? eMain : eDiv));
+    }
   }
 
   // Get current sequence step, then update sequencer if it's
