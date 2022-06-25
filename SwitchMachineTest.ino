@@ -10,13 +10,9 @@
 #include "SwitchMachineCmds.h"
 
 // Compute number of elements in an array.
-#define DIM(x) ((sizeof(x)) / (sizeof(*(x))))
+#define DIM(x) ((sizeof(x))/(sizeof(*(x))))
 
-// GPIO pin assignments
-const byte pinRefresh = 12;   // "refresh" pushbutton, input
-const byte pinReset   = 11;   // "reset" pushbutton, input
-
-// I2C addresses of attached SwitchMachineControllers
+// I2C addresses of attached SwitchMachineController modules
 const byte I2C_ADDR[] = {0x30, 0x31};
 
 // Channel codes
@@ -25,14 +21,18 @@ const byte CHANNEL[] = {eChan0, eChan1, eChan2, eChan3};
 // Time (msec) a controller will need to update all its channels.
 const int updateInterval = 30 * DIM(CHANNEL);
 
-// Toggle switch machines on 4 sec / 2 sec cycle.
-Pulser toggleTimer(4000, 2000);
-
 // Sequencer for stepping through I2C peripherals in sequence.
 // Update interval gives each controller time to command all its
 // channels to move in sequential order before the next controller
 // begins the same operation.
 Sequencer sequencer(updateInterval, DIM(I2C_ADDR));
+
+// Toggle switch machines on 4 sec main / 2 sec diverging cycle.
+Pulser toggleTimer(4000, 2000);
+
+// GPIO pin assignments
+const byte pinRefresh = 12;   // "refresh" pushbutton, input
+const byte pinReset   = 11;   // "reset" pushbutton, input
 
 // Momentary pushbuttons are connected to the input pins, so that
 // each pin is pulled to GROUND when its button is pressed.
@@ -41,23 +41,26 @@ Sequencer sequencer(updateInterval, DIM(I2C_ADDR));
 PushButton pbRefresh(pinRefresh, LOW, 500);
 PushButton pbReset(pinReset, LOW, 500);
 
-// Define the current state of all turnouts.  When each 
-// switch machine controller on the bus boots, it will set its
-// switch machines to their main routes, so we set the local
-// state to match.
-bool toMain = true;
+// Queue of switch machine commands to be sent.
+FIFO commandQueue(8);
 
 // Current command being processed, eNone means none.
 // All actual commands are non-zero.
 E_CMD activeCommand = eNone;
 
-// Queue of switch machine commands to be sent.
-FIFO commandQueue(8);
-
 // Hold off all I2C comms until timeout after startup.
 bool waiting = true;
 
-// Transmit byte to specific I2C address.
+// The current state of all turnouts.  When each switch machine
+// controller on the bus boots, it will set its switch machines
+// to the "refresh" state, so no matter whether the first command
+// received is eMain or eDiv, the switch machine will be energized.
+// The startup logic of this sketch will send an eReset command to
+// all controllers, after which all turnouts will be set to the
+// "main" position.
+bool toMain;
+
+// Transmit byte to specific I2C address.  LED_BUILTIN will blink.
 void send(const byte addr, const byte b)
 {
   digitalWrite(LED_BUILTIN, HIGH);
@@ -80,6 +83,7 @@ void loop()
   // Has startup delay expired?
   if (waiting && (millis() >= 4000)) {
     commandQueue.push((byte) eReset);
+    toMain = true;
     waiting = false;
   }
   
@@ -91,20 +95,21 @@ void loop()
     commandQueue.push((byte) eRefresh);
   }
 
-  // Time to update toggle timer?
+  // Time to update toggle timer?  Skip this if waiting in startup.
   if (toggleTimer.update() && !waiting) {
     // Did toggle timer object change state since previous update?
     bool toMainNew = toggleTimer.read();
     if (toMain != toMainNew) {
-      // State changed, queue up matching command (eMain or eDiv).
+      // State changed, queue up new command (eMain or eDiv).
+      commandQueue.push((byte) (toMainNew ? eMain : eDiv));
       toMain = toMainNew;
-      commandQueue.push((byte) (toMain ? eMain : eDiv));
     }
   }
 
   // Get current sequence step, then update sequencer if it's
-  // time to do so.  These two steps must be performed in this order;
-  // the step will have been incremented when update returns true.
+  // time to do so.  These two operations must be performed in this
+  // order; the step will have been incremented when update returns
+  // true, but we need the step number from BEFORE the increment.
   int step = sequencer.read();
   bool seqUpdated = sequencer.update();
   // Action depends on which command is active (being sequenced).
