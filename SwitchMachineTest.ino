@@ -123,7 +123,7 @@ void loop()
         if (seqUpdated) {
           if (step < 0) {
             // Previous sequence completed.
-            activeCommand = 0x00;
+            activeCommand = eNone;
           } else {
             // Sequence in progress, send commands to next controller
             // in order.
@@ -145,7 +145,7 @@ void loop()
         if (seqUpdated) {
           if (step < 0) {
             // Previous sequence completed.
-            activeCommand = 0x00;
+            activeCommand = eNone;
           } else {
             // Sequence in progress, send command to next controller
             // in order.
